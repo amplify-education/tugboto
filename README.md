@@ -16,3 +16,12 @@ Usage:
 -------------
 Simply call the command line tools.  You'll need to have your AWS access and secret keys in either the boto config, your environment variables, or handy to pass as flags.
 See each individual tool for usage details.
+
+
+To do:
+-------------
+
+Tugboto is eventually going to be a shell.
+
+- Tugboto needs a CLI module that calls separate modules
+- The code needs a serious cleanup

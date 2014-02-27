@@ -25,3 +25,4 @@ Tugboto is eventually going to be a shell.
 
 - Tugboto needs a CLI module that calls separate modules
 - The code needs a serious cleanup
+- When done, this means serious DRYing of the codebase.

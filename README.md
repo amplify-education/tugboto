@@ -3,7 +3,7 @@ tugboto
 
 ![a tugboat](http://i.imgur.com/lljFL26.png)
 
-Little helpful tools that employ Boto - the Python interface to Amazon Web Services
+Little helpful tools and scripts that employ Boto - the Python interface to Amazon Web Services
 
 Installation
 -------------

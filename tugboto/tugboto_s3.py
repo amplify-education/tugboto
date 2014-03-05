@@ -31,7 +31,7 @@ from datetime import datetime, timedelta
 # Try to import boto, sending a helpful error message if we fail.
 try:
 	import boto
-except:
+except ImportError:
 	exit("importing boto failed.  try activating your virtualenv and/or `pip install boto`")
 
 #importing as just s3 so it's clear where tugboto ends.

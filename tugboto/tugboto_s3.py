@@ -53,7 +53,8 @@ class TugBoto_S3(object):
 		self.bucket_name = bucket_name
 		self.directory_name = directory_name
 		self.connection = S3Connection(AWS_KEY,AWS_SECRET)
-		self.key_list = bucket_name.get_all_keys(prefix=directory_name)
+		self.bucket = self.connection.get_bucket(bucket_name)
+		self.key_list = self.bucket.get_all_keys(prefix=directory_name)
 		self.key_list_content = []
 
 	def cp(self):
@@ -96,17 +97,19 @@ if __name__ == "__main__":
 						help = "AWS Access Key ID", type = str)
 	parser.add_argument("-s", "--access-secret", default=os.environ.get("AWS_SECRET_ACCESS_KEY"),
 						help = "AWS Access Key Secret", type = str)
-	parser.add_argument("-r", "--instance_region", nargs=1, default="us-east-1", type=str,
+	parser.add_argument("-r", "--instance-region", nargs=1, default="us-east-1", type=str,
 						help="the region to query or 'all' for all regions [defaults to us-east-1]")
-	parser.add_argument("-b", "--bucket", nargs=1, type=str )
+	parser.add_argument("-b", "--bucket", nargs=1, type=str, required=True )
 	parser.add_argument("-d", "--directory", nargs=1, type=str )
 	parser.add_argument("-e", "--expire-days", default=30, type=int,
 						help = "Set the number of days before Amazon expires (deletes) content in the bucket")
 	args = parser.parse_args()
+	# Convert the arg object to a dict
+	args = vars(args)
 
 	#Use the key specified by the command line or go hunting for it:
-	AWS_KEY         =   args.access_key
-	AWS_SECRET      =   args.access_secret
+	AWS_KEY         =   args['access_key']
+	AWS_SECRET      =   args['access_secret']
 	if AWS_KEY is None: AWS_KEY = boto.config.get("Credentials", "aws_access_key_id")
 	if AWS_SECRET is None: AWS_SECRET = boto.config.get("Credentials", "aws_secret_access_key")
 
@@ -125,6 +128,9 @@ if __name__ == "__main__":
 	else:
 		tugboto = TugBoto_S3(
 			aws_access_secret=AWS_SECRET,
-			aws_access_key=AWS_KEY
+			aws_access_key=AWS_KEY,
+			bucket_name=args['bucket'][0],
+			directory_name=args['directory']
 		)
-		tugboto.expire(days='15')
+		if args['expire_days']:
+			tugboto.expire(days='30')

@@ -133,4 +133,4 @@ if __name__ == "__main__":
 			directory_name=args['directory']
 		)
 		if args['expire_days']:
-			tugboto.expire(days='30')
+			tugboto.expire(days=args['expire_days'])

@@ -19,9 +19,7 @@
 #TODO: implement a lookup dict the TugBoto_S3 methods and add a print flag?
 #TODO: this is in a weird module/script state -- replace prints with return and print on the __name__ == '__main__'
 
-raise NotImplementedError('not ready quite yet.')
-
-VERSION = '0.03'
+VERSION = '0.04'
 
 import argparse
 import json
@@ -57,12 +55,14 @@ def confirm(message="Are you sure? [y/n]: "):
 
 
 #if this is being run as a script, use system exit codes
+'''
 if __name__ == '__main__':
 	_success = exit(0)
 	_failure = exit(1)
 else:
 	_success = True
 	_failure = False
+'''
 
 def debug_message(message_type='debug', *args):
 	'''
@@ -73,6 +73,9 @@ def debug_message(message_type='debug', *args):
 ############################################################
 
 class TugBoto_S3(object):
+	'''
+	The TugBoto interface to S3
+	'''
 
 	def __init__(self, aws_access_secret, aws_access_key, bucket_name=None, key_name=None, location='', debug=False):
 		self.aws_access_secret = aws_access_secret
@@ -93,6 +96,15 @@ class TugBoto_S3(object):
 		self.key_list = self.bucket.get_all_keys(prefix=key_name)
 		self.key_list_content = []
 		self.debug = debug
+		self.command = ''
+		self.methods = ([method for method in dir(self) if not method.startswith('__')])
+		print self.methods
+
+
+
+
+	def show_version(self):
+		print(VERSION)
 
 	def cp(self):
 		print "aws cp"
@@ -127,8 +139,8 @@ class TugBoto_S3(object):
 			self.key_list_content.append(key)
 			key.copy(self.bucket_name, key, metadata=metadata, preserve_acl=True)
 
-		#Give the user a head's up of what was run (if we're here, we didn't make a Traceback):
-		if self.debug: print debug_message('debug', "bucket: {x.bucket_name}, policy: {x.transition}, days: {x.days}".format(x=self))
+		if self.debug: print debug_message('debug', "bucket: {x.bucket_name}, policy: {x.command}, days: {x.days}".format(x=self))
+
 
 	def show_lifecycle(self):
 		current_lifecycle = self.bucket.get_lifecycle_config()
@@ -168,6 +180,23 @@ class TugBoto_S3(object):
 	Key operations:
 	'''
 
+	############################################################
+	# Key Operations
+	# Store the key operations in a list so the code is dry-er
+	############################################################
+
+
+	def key(self, bucket, key_name):
+		'''
+		get a reference to the a specified key in a bucket,
+		catching None and assigning it to the initializing bucket
+		'''
+		if bucket == None: bucket = self.bucket
+		if key_name == None: bucket = self.key_name
+		k = Key(bucket)
+		k.key = key_name
+		self.key_reference = k.key
+
 	def check_if_exists(self, key_name):
 
 		if self.bucket.get_key(key_name): return _success
@@ -205,8 +234,13 @@ class TugBoto_S3(object):
 		k.key = key_name
 		k.set_contents_from_filename(filename)
 
-	def show_version(self):
-		print(VERSION)
+
+
+	key_operations = [ check_if_exists, read, fetch, touch, write ]
+	#if
+
+
+
 
 
 ########################################################################
@@ -229,6 +263,7 @@ if __name__ == "__main__":
 	parser.add_argument("-b", "--bucket", nargs=1, type=str, required=True, help="target bucket for policy" )
 	parser.add_argument("-k", "--key", nargs=1, type=str, help="optionally specify a key within the specified bucket" )
 	parser.add_argument("-t", "--transition", nargs=1, type=str, choices=('delete', 'glacier'), default='delete')
+	parser.add_argument("-c", "--command", nargs=1, type=str, choices=())
 	parser.add_argument("-e", "--expire-days", default=30, type=int,
 						help = "Set the number of days before Amazon expires (deletes) content in the bucket")
 	args = parser.parse_args()
